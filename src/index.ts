@@ -1,30 +1,27 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+import * as express from 'express'
+import getDolRouter from './directline'
+import { BotFrameworkAdapter } from 'botbuilder'
+import { MyBot } from './bot'
+import chalk from 'chalk'
 
-import { config } from 'dotenv';
-import * as path from 'path';
-import * as restify from 'restify';
+const ENV_FILE = path.join(__dirname, '..', '.env')
+dotenv.config({ path: ENV_FILE })
 
-// Import required bot services.
-// See https://aka.ms/bot-services to learn more about the different parts of a bot.
-import { BotFrameworkAdapter } from 'botbuilder';
+const port = parseInt(process.env.PORT, 10)
+const server = express()
 
-// This bot's main dialog.
-import { MyBot } from './bot';
+const isDevelopment = process.env.NODE_ENV === 'development'
+if (isDevelopment) {
+    console.log(chalk.yellowBright(`Adding /directline routes`))
+    server.use(getDolRouter(port))
+}
 
-const ENV_FILE = path.join(__dirname, '..', '.env');
-config({ path: ENV_FILE });
+server.listen(port, () => {
+    console.log(`Server listening at: http://localhost:${port}`)
+})
 
-// Create HTTP server.
-const server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-    console.log(`\n${server.name} listening to ${server.url}`);
-    console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
-    console.log(`\nSee https://aka.ms/connect-to-bot for more information`);
-});
-
-// Create adapter.
-// See https://aka.ms/about-bot-adapter to learn more about adapters.
 const adapter = new BotFrameworkAdapter({
     appId: process.env.MicrosoftAppID,
     appPassword: process.env.MicrosoftAppPassword,
@@ -33,18 +30,18 @@ const adapter = new BotFrameworkAdapter({
 // Catch-all for errors.
 adapter.onTurnError = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
-    console.error(`\n [onTurnError]: ${ error }`);
+    console.error(`\n [onTurnError]: ${ error }`)
     // Send a message to the user
-    await context.sendActivity(`Oops. Something went wrong!`);
+    await context.sendActivity(`Oops. Something went wrong!`)
 };
 
 // Create the main dialog.
-const myBot = new MyBot();
+const myBot = new MyBot()
 
 // Listen for incoming requests.
 server.post('/api/messages', (req, res) => {
     adapter.processActivity(req, res, async (context) => {
         // Route to main dialog.
-        await myBot.run(context);
-    });
-});
+        await myBot.run(context)
+    })
+})

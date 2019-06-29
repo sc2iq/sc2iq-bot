@@ -1,27 +1,13 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+import * as express from 'express'
+import * as directline from 'offline-directline'
 
-import { ActivityHandler } from 'botbuilder';
+export default function getDolRouter (botPort: number): express.Router {
+    const dolServiceUrl = `http://127.0.0.1:${botPort}`
+    const dolBotUrl = `http://127.0.0.1:${botPort}/api/messages`
 
-export class MyBot extends ActivityHandler {
-    constructor() {
-        super();
-        // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types.
-        this.onMessage(async (context, next) => {
-            await context.sendActivity(`You said '${ context.activity.text }'`);
-            // By calling next() you ensure that the next BotHandler is run.
-            await next();
-        });
-
-        this.onMembersAdded(async (context, next) => {
-            const membersAdded = context.activity.membersAdded;
-            for (const member of membersAdded) {
-                if (member.id !== context.activity.recipient.id) {
-                    await context.sendActivity('Hello and welcome!');
-                }
-            }
-            // By calling next() you ensure that the next BotHandler is run.
-            await next();
-        });
-    }
+    // Don't require conversation initialization. This allows
+    // UI to continue conversation even after bot restart
+    const conversationInitRequired = false
+    // TODO: Direct Line initialize method implicitly starts listening, submit PR to make this manual
+    return directline.getRouter(dolServiceUrl, dolBotUrl, conversationInitRequired)
 }
