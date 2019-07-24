@@ -15,7 +15,7 @@ const server = express()
 const isDevelopment = process.env.NODE_ENV === 'development'
 if (isDevelopment) {
     console.log(chalk.yellowBright(`Adding /directline routes`))
-    server.use(getDolRouter(port, 3000))
+    server.use(getDolRouter(port))
 }
 
 server.listen(port, () => {
