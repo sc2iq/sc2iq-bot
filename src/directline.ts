@@ -1,8 +1,8 @@
 import * as express from 'express'
 import * as directline from 'offline-directline'
 
-export default function getDolRouter (botPort: number): express.Router {
-    const dolServiceUrl = `http://127.0.0.1:${botPort}`
+export default function getDolRouter (botPort: number, servicePort = botPort): express.Router {
+    const dolServiceUrl = `http://127.0.0.1:${servicePort}`
     const dolBotUrl = `http://127.0.0.1:${botPort}/api/messages`
 
     // Don't require conversation initialization. This allows
